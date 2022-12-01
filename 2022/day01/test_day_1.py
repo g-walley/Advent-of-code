@@ -1,20 +1,13 @@
 """Tests for day 1"""
 
 from pathlib import Path
-import unittest
-import time
+from shared_test import AOCTest
 from day01.task import pt1, pt2
 
-class TestCase(unittest.TestCase):
+class TestCase(AOCTest):
     """Test case for Day 1"""
     ex = "2022/day01/example.txt"
     in_path = "2022/day01/input.txt"
-    def setUp(self) -> None:
-        self.startTime = time.time()
-
-    def tearDown(self) -> None:
-        t = time.time() - self.startTime
-        print('%s: %.6f' % (self.id(), t*1000))
 
     def test_example_part_1(self):
         """Input example data to part 1"""
