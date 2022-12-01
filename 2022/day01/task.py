@@ -16,12 +16,5 @@ def pt1(raw_data):
 
 def pt2(raw_data, num_top):
     """part 2"""
-    list_cals = gen_list(raw_data)
+    return sum(sorted(gen_list(raw_data), reverse=True)[0:3])
 
-    top_cals = []
-    for _ in range(num_top):
-        max_cal = max(list_cals)
-        top_cals.append(max_cal)
-        list_cals.remove(max_cal)
-
-    return sum(top_cals)
