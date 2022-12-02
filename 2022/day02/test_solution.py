@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from shared_test import AOCTest
-from day02.solution import pt1
+from day02.solution import pt1, pt2
 
 class TestCase(AOCTest):
     """Test case for Day 1"""
@@ -16,23 +16,23 @@ class TestCase(AOCTest):
             15,
         )
 
-    # def test_example_part_2(self):
-    #     """Input example data to part 2"""
-    #     self.assertEqual(
-    #         pt2(Path(self.ex).read_text(encoding="utf8")),
-    #         45000,
-    #     )
+    def test_example_part_2(self):
+        """Input example data to part 2"""
+        self.assertEqual(
+            pt2(Path(self.ex).read_text(encoding="utf8")),
+            12,
+        )
 
     def test_input_part_1(self):
         """Test Created with answer to allow for refactoring."""
         self.assertEqual(
             pt1(Path(self.in_path).read_text(encoding="utf8")),
-            74394,
+            13675,
         )
 
-    # def test_input_part_2(self):
-    #     """Test Created with answer to allow refactoring"""
-    #     self.assertEqual(
-    #         pt2(Path(self.in_path).read_text(encoding="utf8"), 3),
-    #         212836,
-    #     )
+    def test_input_part_2(self):
+        """Test Created with answer to allow refactoring"""
+        self.assertEqual(
+            pt2(Path(self.in_path).read_text(encoding="utf8")),
+            14184,
+        )
