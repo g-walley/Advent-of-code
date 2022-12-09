@@ -4,8 +4,10 @@ from pathlib import Path
 from shared_test import AOCTest
 from day09.solution import pt1, pt2
 
+
 class TestCase(AOCTest):
     """Test case for Day 1"""
+
     ex = "2022/day09/example.txt"
     in_path = "2022/day09/input.txt"
     larger_ex = "2022/day09/larger_example.txt"

@@ -5,9 +5,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Deque, Set
 from parse import *
-import sys
-
-gettrace = getattr(sys, "gettrace", None)
 
 
 @dataclass(frozen=True)
@@ -15,13 +12,16 @@ class Vector2D:
     x: int
     y: int
 
+    def __add__(self, other: Vector2D):
+        return Vector2D(self.x + other.x, self.y + other.y)
+
     def __sub__(self, other: Vector2D):
         return Vector2D(self.x - other.x, self.y - other.y)
 
 
 @dataclass
 class Knot:
-    child: Knot | None
+    tail: Knot | None
     position: Vector2D = Vector2D(0, 0)
     visited: Set[Vector2D] = field(default_factory=set)
 
@@ -37,7 +37,7 @@ class Knot:
             <= 1
         )
 
-    def delta(self, other: Knot):
+    def delta_to(self, other: Knot):
         return Vector2D(
             (self.position.x - other.position.x)
             // (abs(self.position.x - other.position.x) or 1),
@@ -46,19 +46,16 @@ class Knot:
         )
 
     def move(self, direction: Vector2D):
-        self.position = Vector2D(
-            self.position.x + direction.x,
-            self.position.y + direction.y,
-        )
-        if self.child:
-            if not self.touching(self.child):
-                self.child.move(direction=self.delta(self.child))
+        self.position += direction
+        if self.tail:
+            if not self.touching(self.tail):
+                self.tail.move(direction=self.delta_to(self.tail))
         else:
             self.visited.add(Vector2D(self.position.x, self.position.y))
 
     def cells_visited(self) -> int:
-        if self.child:
-            return self.child.cells_visited()
+        if self.tail:
+            return self.tail.cells_visited()
         return self.visited
 
 
@@ -74,77 +71,33 @@ def decode_instructions(file_path: Path) -> Deque[Vector2D]:
     instructions: Deque[Vector2D] = deque()
     for line in file_path.read_text().splitlines():
         input = parse("{direction} {distance}", line.strip()).named
-        direction = direction_vectors[input["direction"]]
-        distance = int(input["distance"])
-        for _ in range(distance):
-            instructions.append(direction)
+        for _ in range(int(input["distance"])):
+            instructions.append(direction_vectors[input["direction"]])
 
     return instructions
 
 
-def construct_rope(length):
-    head = Knot(child=None)
-    current_knot = head
-    for _ in range(length - 1):
-        current_knot.child = Knot(child=None)
-        current_knot = current_knot.child
-    return head
+def tie_knots_together(number_of_knots: int) -> Knot:
+    knots = [Knot(None) for _ in range(number_of_knots)]
+    for idx, knot in enumerate(knots):
+        knot.tail = knots[idx + 1] if idx < number_of_knots - 1 else None
+    return knots[0]
 
 
 def pt1(path: Path):
-    """part 1"""
-
     instructions = decode_instructions(path)
-    head = construct_rope(2)
+    head = tie_knots_together(2)
+
     while instructions:
-        instruction = instructions.popleft()
-        head.move(instruction)
-        if gettrace():
-            debug_print(head)
-
+        head.move(instructions.popleft())
     return len(head.cells_visited())
-
-
-def debug_print(head: Knot):
-
-    positions = {}
-    current_knot = head
-    knot_count = 0
-    while current_knot:
-        if current_knot.position not in positions:
-            positions[current_knot.position] = (
-                "H" if knot_count == 0 else str(knot_count)
-            )
-        current_knot = current_knot.child
-        knot_count += 1
-    if (origin := Vector2D(0, 0)) not in positions:
-        positions[origin] = "S"
-
-    for y in range(
-        max([pos.y for pos in positions]), min([pos.y for pos in positions]) - 1, -1
-    ):
-        line_str = ""
-        for x in range(
-            min([pos.x for pos in positions]), max([pos.x for pos in positions]) + 1
-        ):
-            char = positions.get(Vector2D(x, y), ".")
-            line_str += char
-
-        print(line_str)
-
-    print("\n-----\n")
 
 
 def pt2(path: Path):
     """part 2"""
-
     instructions = decode_instructions(path)
+    head = tie_knots_together(10)
 
-    head = construct_rope(10)
     while instructions:
-        instruction = instructions.popleft()
-        head.move(instruction)
-        if gettrace():
-            debug_print(head)
-
+        head.move(instructions.popleft())
     return len(head.cells_visited())
