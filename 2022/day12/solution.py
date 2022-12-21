@@ -57,7 +57,7 @@ def pt1(raw_input: Path):
             if height_str == 'S':
                 geo_data = GeoData(-1, 0, False)
             elif height_str == 'E':
-                geo_data = GeoData(height=ord('z') + 1 - ord('a'), distance=-1, end=True)
+                geo_data = GeoData(height=ord('z') - ord('a'), distance=-1, end=True)
             else:
                 geo_data = GeoData(height=ord(height_str) - ord('a'), distance=-1, end=False)
 
@@ -89,7 +89,7 @@ def pt2(raw_input: Path):
             if height_str == 'S':
                 geo_data = GeoData(-1, -1, True)
             elif height_str == 'E':
-                geo_data = GeoData(height=ord('z') + 1 - ord('a'), distance=0, end=False)
+                geo_data = GeoData(height=ord('z') - ord('a'), distance=0, end=False)
             elif height_str == 'a':
                 geo_data = GeoData(height=0, distance=-1, end=True)
             else:
