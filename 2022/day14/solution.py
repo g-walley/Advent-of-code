@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 
 @dataclass(frozen=True)
@@ -57,14 +57,15 @@ class Cave:
 
         self.known[Point2D(500, 0)] = "+"
 
-    def draw(self, sand: Optional[Point2D] = None):
-
+    def update_boundaries(self):
         all_x = [point.x for point in self.known]
-        all_y = [point.y for point in self.known]
+        all_y = [point.y for point in self.known if self.known[point] == "#"]
+        all_y.append(0)
 
         self.x_axis = Axis(min(all_x), max(all_x))
         self.y_axis = Axis(min(all_y), max(all_y))
 
+    def draw(self, sand: Optional[Point2D] = None):
         print(f"x: {self.x_axis}, y: {self.y_axis}")
 
         for y in range(self.y_axis.min, self.y_axis.max + 2):
@@ -83,9 +84,12 @@ class Cave:
 
         while moving:
             for delta in deltas:
-                if (new_location := location + delta) in self.known or (
-                    not floor and new_location.y == self.y_axis.max + 2
-                ):
+                new_location = location + delta
+                if floor and new_location.y >= self.y_axis.max + 2:
+                    self.known[location] = "o"
+                    moving = False
+                    break
+                elif new_location in self.known:
                     continue
                 else:
                     if (not floor) and (location.y >= self.y_axis.max):
@@ -98,6 +102,7 @@ class Cave:
 
                 if floor and location == Point2D(500, 0):
                     return False
+            self.update_boundaries()
             # self.draw(location)
         return True
 
@@ -125,6 +130,8 @@ def pt2(raw_input: Path):
     counter = 0
     while cave.drop_sand(floor=True):
         counter += 1
+        if counter % 100 == 0:
+            cave.draw()
 
     cave.draw()
-    return counter
+    return counter + 1

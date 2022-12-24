@@ -29,9 +29,34 @@ class TestCase(AOCTest):
             805,
         )
 
-    # def test_input_part_2(self):
-    #     """Test Created with answer to allow refactoring"""
-    #     self.assertEqual(
-    #         pt2(Path(self.in_path)),
-    #         2639,
-    #     )
+    def test_input_part_2(self):
+        """Test Created with answer to allow refactoring"""
+        self.assertEqual(
+            pt2(Path(self.in_path)),
+            25161,
+        )
+
+
+""" Notes for refactoring:
+
+fell left
+
+0o
+next can start the algorithm from diagonal up and right of that position.
+
+start here:
+ x
+0o
+
+fell right
+
+oo0
+start here:
+ x
+000
+
+couldn't fall anywhere, start
+ x
+ 0
+ooo
+"""
