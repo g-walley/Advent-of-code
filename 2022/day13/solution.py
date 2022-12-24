@@ -1,48 +1,46 @@
-from copy import deepcopy
-from dataclasses import dataclass
+from collections import deque
 from pathlib import Path
-from ast import literal_eval
-from typing import List
+from typing import Deque, List
+from functools import cmp_to_key
 
 
-@dataclass
-class Pair:
-    left: List[int | List]
-    right: List[int | List]
+def get_next(d: Deque):
+    item: str = d.popleft()
+    if d:
+        if item.isdigit() and d[0] == "0":
+            item += d.popleft()
+    return item
 
 
-def compare_lists(left: List, right: List) -> bool:
+def compare(left: str, right: str) -> int:
+    left, right = (
+        deque([char for char in left]),
+        deque([char for char in right]),
+    )
+    while left and right:
+        l = get_next(left)
+        r = get_next(right)
+        if l == r:
+            continue
+        elif (
+            l.isdigit() and r.isdigit()
+        ):  # Left side is smaller, or right side is smaller
+            return int(l) - int(r)
 
-    print(f"{left}\n{right}\n\n")
+        if (l == "]" and (r == "," or r == "[")) or (
+            l == "]" and r.isdigit()
+        ):  # Left ran out of items
+            return -1
+        elif ((l == "," or l == "[") and r == "]") or (
+            l.isdigit() and r == "]"
+        ):  # Right ran out of items
+            return 1
+        elif l == "[" and r != "[":  # Convert right digit into a list
+            right.extendleft(["]", r])
+        elif l != "[" and r == "[":  # Convert left digit into a list
+            left.extendleft(["]", l])
 
-
-def right_side_is_smaller(pair: Pair) -> bool:
-    if isinstance(pair.left, list) and isinstance(pair.right, int):
-        pair.right = [pair.right]
-
-    if isinstance(pair.left, int) and isinstance(pair.right, list):
-        pair.left = [pair.left]
-
-    assert isinstance(pair.left, list), "Left is not list"
-    assert isinstance(pair.right, list), "Right is not list"
-
-    while pair.left:
-        left_elem = pair.left.pop(0)
-
-        try:
-            right_elem = pair.right.pop(0)
-        except IndexError:
-            return False  # Right side ran out of items, so inputs are _not_ in the right order
-
-        if isinstance(left_elem, list) or isinstance(right_elem, list):
-            if right_side_is_smaller(Pair(left_elem, right_elem)):
-                return True
-        elif isinstance(left_elem, int) and isinstance(right_elem, int):
-            if
-        else:
-            assert False, "Neither are int or list!!!"
-
-
+    return 0
 
 
 def pt1(raw_input: Path) -> int:
@@ -50,12 +48,22 @@ def pt1(raw_input: Path) -> int:
     total = 0
     for idx, pair in enumerate(raw_input.read_text().split("\n\n"), start=1):
         lines = pair.splitlines()
-        pair = Pair(literal_eval(lines[0]), literal_eval(lines[1]))
-        if right_side_is_smaller(pair):
+        left, right = (
+            deque([char for char in lines[0]]),
+            deque([char for char in lines[1]]),
+        )
+
+        if compare(left, right) < 0:
             total += idx
 
     return total
 
 
-def pt2(raw_input):
+def pt2(raw_input: Path):
     """part 2"""
+    file_as_list: List[str] = raw_input.read_text().replace("\n\n", "\n").splitlines()
+    file_as_list.extend(["[[2]]", "[[6]]"])
+
+    sorted_list: List = sorted(file_as_list, key=cmp_to_key(compare))
+
+    return (sorted_list.index("[[2]]") + 1) * (sorted_list.index("[[6]]") + 1)
