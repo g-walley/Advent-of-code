@@ -1,0 +1,17 @@
+test_example_part_1 (day18.test_solution.TestCase.test_example_part_1)
+Input example data to part 1 ... day18.test_solution.TestCase.test_example_part_1: 1.240ms
+ok
+test_example_part_2 (day18.test_solution.TestCase.test_example_part_2)
+Input example data to part 2 ... day18.test_solution.TestCase.test_example_part_2: 4.543ms
+ok
+test_input_part_1 (day18.test_solution.TestCase.test_input_part_1)
+Test Created with answer to allow for refactoring. ... day18.test_solution.TestCase.test_input_part_1: 90.382ms
+ok
+test_input_part_2 (day18.test_solution.TestCase.test_input_part_2)
+Test Created with answer to allow refactoring ... day18.test_solution.TestCase.test_input_part_2: 184.353ms
+ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 1.118s
+
+OK
