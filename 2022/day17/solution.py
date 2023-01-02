@@ -63,7 +63,7 @@ def print_world(static_points: Set[Tuple], rock: Set[Tuple]):
 
 def create_world_sig(static_objects: Set[Tuple]):
     max_y = max([y for (x, y) in static_objects])
-    return frozenset([(x, max_y - y) for (x, y) in static_objects if max_y - y <= 40])
+    return frozenset([(x, max_y - y) for (x, y) in static_objects if max_y - y <= 10])
 
 
 def run(wind: str, max_t: int) -> int:
@@ -115,7 +115,6 @@ def run(wind: str, max_t: int) -> int:
                     (old_t, old_y) = seen[sig]
                     dt = t - old_t
                     dy = max_y - old_y
-
                     chunk = (max_t - t) // dt
                     skipped += chunk * dy
                     t += chunk * dt
