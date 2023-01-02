@@ -2,7 +2,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 from collections import deque
 
 
@@ -18,86 +18,42 @@ LEFT_LIMIT = 0
 RIGHT_LIMIT = 6
 
 
-@dataclass(frozen=True)
-class Point2D:
-    x: int
-    y: int
-
-    def __add__(self, other: Point2D):
-        return Point2D(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other: Point2D):
-        return Point2D(self.x - other.x, self.y - other.y)
+def get_rock(shape: List[str], bottom_row: int) -> Set[Tuple]:
+    return {
+        (2 + elem_idx, bottom_row + row_idx)
+        for row_idx, row in enumerate(shape)
+        for elem_idx, elem in enumerate(row)
+        if elem == "@"
+    }
 
 
-@dataclass()
-class Rock:
-    parts: List[Point2D]
-    stationary: bool = False
-
-    def __init__(self, shape: List[str], bottom_row: int):
-        self.parts = []
-        for row_idx, row in enumerate(shape):
-            for elem_idx, elem in enumerate(row):
-                if elem != "@":
-                    continue
-                x = 2 + elem_idx
-                y = bottom_row + row_idx
-                self.parts.append(Point2D(x, y))
-
-        self.parts = sorted(self.parts, key=lambda x: x.x)
-
-        self.left = 2
-        self.right = max([part.x for part in self.parts])
-
-    def move(self, direction: Point2D) -> List[Point2D]:
-        new_parts = []
-        for part in self.parts:
-            new_parts.append(part + direction)
-        return new_parts
-
-    def blow(self, direction: str) -> List[Point2D]:
-        assert direction == "<" or direction == ">", "Direction Invalid!"
-        return self.move(
-            direction=Point2D(-1, 0) if direction == "<" else Point2D(1, 0)
-        )
-
-    def drop(self) -> List[Point2D]:
-        return self.move(direction=Point2D(0, -1))
-
-    @property
-    def parts_sorted_bottom_up(self):
-        return sorted(self.parts, key=lambda x: x.y)
+def move_right(rock: Set[Tuple]) -> Set[Tuple]:
+    return {(x + 1, y) for (x, y) in rock}
 
 
-def rock_shape_generator():
-    d = deque(shapes)
-    while True:
-        d.append(next := d.popleft())
-        yield next
-
-def wind_generator(raw_input: Path) -> str:
-    d = deque(list(raw_input.read_text(encoding='utf-8')))
-    while True:
-        d.append(next := d.popleft())
-        yield next
+def move_left(rock: Set[Tuple]) -> Set[Tuple]:
+    return {(x - 1, y) for (x, y) in rock}
 
 
-def collision(rock_positions: List[Point2D], world: Set[Point2D]) -> bool:
-    return True if set(rock_positions).intersection(world) else False
+def move_down(rock: Set[Tuple]) -> Set[Tuple]:
+    return {(x, y - 1) for (x, y) in rock}
 
 
-def print_world(static_points, rock: Rock):
+def move_up(rock: Set[Tuple]) -> Set[Tuple]:
+    return {(x, y + 1) for (x, y) in rock}
+
+
+def print_world(static_points: Set[Tuple], rock: Set[Tuple]):
     world = "\t|-------|\n\n"
-    all_y = [p.y for p in static_points]
-    all_y.extend([r_p.y for r_p in rock.parts])
+    all_y = [y for (x, y) in static_points]
+    all_y.extend([y for (x, y) in rock])
     max_y = max(all_y)
     for y in range(0, max_y + 1):
         row = ""
         for x in range(LEFT_LIMIT, RIGHT_LIMIT + 1):
-            if (p := Point2D(x, y)) in static_points:
+            if (p := (x, y)) in static_points:
                 row += "#"
-            elif p in rock.parts:
+            elif p in rock:
                 row += "@"
             else:
                 row += "."
@@ -105,104 +61,80 @@ def print_world(static_points, rock: Rock):
     print(world)
 
 
+def create_world_sig(static_objects: Set[Tuple]):
+    max_y = max([y for (x, y) in static_objects])
+    return frozenset([(x, max_y - y) for (x, y) in static_objects if max_y - y <= 40])
+
+
+def run(wind: str, max_t: int) -> int:
+    seen = {}
+    static_objects = set()
+    t = 0
+    wind_idx = 0
+    shape_idx = 0
+    max_y = -1
+    sig = []
+    skipped = 0
+    while t < max_t:
+        t += 1
+        moving = True
+        s = shape_idx % len(shapes)
+        rock = get_rock(shapes[s], max_y + 4)
+
+        while moving:
+            # Drift
+            w = wind_idx % len(wind)
+            if wind[w] == "<":
+                if not any([x == LEFT_LIMIT for (x, y) in rock]):
+                    rock = move_left(rock)
+                    if rock & static_objects:
+                        rock = move_right(rock)
+            elif wind[w] == ">":
+                if not any([x == RIGHT_LIMIT for (x, y) in rock]):
+                    rock = move_right(rock)
+                    if rock & static_objects:
+                        rock = move_left(rock)
+            wind_idx += 1
+            # print_world(static_objects, rock)
+            # Drop
+            if not any([y == 0 for (x, y) in rock]):
+                rock = move_down(rock)
+                if rock & static_objects:
+                    rock = move_up(rock)
+                    moving = False
+            else:
+                moving = False
+
+            if not moving:
+                for (x, y) in rock:
+                    static_objects.add((x, y))
+                max_y = max([y for (x, y) in static_objects])
+
+                sig = (w, s, create_world_sig(static_objects))
+                if sig in seen:
+                    (old_t, old_y) = seen[sig]
+                    dt = t - old_t
+                    dy = max_y - old_y
+
+                    chunk = (max_t - t) // dt
+                    skipped += chunk * dy
+                    t += chunk * dt
+
+                    assert t <= max_t
+
+                seen[sig] = (t, max_y)
+            # print_world(static_objects, rock)
+
+        shape_idx += 1
+
+    return max_y + 1 + skipped
+
+
 def pt1(raw_input: Path):
     """part 1"""
-    rock_gen = rock_shape_generator()
-    wind_gen = wind_generator(raw_input)
-
-    static_points: Set[Point2D] = set()
-
-    top = -1
-    for i in range(2022):
-        r = Rock(shape=next(rock_gen), bottom_row=top + 4)
-        # print("New Rock")
-        # print_world(static_points, r)
-
-        falling = True
-        while falling:
-            new_r_position = r.blow(d:= next(wind_gen))
-            # print(f"Wind: {d}")
-            out_of_bounds = any([part.x < LEFT_LIMIT or RIGHT_LIMIT < part.x for part in new_r_position])
-            if not out_of_bounds:
-                if not collision(new_r_position, static_points):
-                    r.parts = new_r_position
-
-            # print_world(static_points, r)
-
-            new_r_position = r.drop()
-            # print("Drop 1")
-            out_of_bounds = any([part.y < 0 for part in new_r_position])
-            if out_of_bounds or collision(new_r_position, static_points):
-                for point in r.parts:
-                    static_points.add(point)
-
-                falling = False
-            else:
-                r.parts = new_r_position
-
-            # print_world(static_points, r)
-
-        y_to_cmp = [top]
-        y_to_cmp.extend([part.y for part in r.parts])
-        top = max(y_to_cmp)
-        print(f"Top: {top}")
-
-    return(top + 1)
+    return run(wind=raw_input.read_text(encoding="utf-8"), max_t=2022)
 
 
-def pt2(raw_input):
+def pt2(raw_input: Path):
     """part 2"""
-    start_wind = deque(list(raw_input.read_text(encoding='utf-8')))
-    winds = deepcopy(start_wind)
-
-    start_rocks = deque(shapes)
-    rocks = deepcopy(start_rocks)
-
-    static_points: Set[Point2D] = set()
-
-    top = -1
-    for i in range(1000000000000):
-
-        if winds == start_wind and rocks == start_rocks and i != 0:
-            print_world(start_rocks)
-
-        shape = rocks.popleft()
-        rocks.append(shape)
-
-        r = Rock(shape=shape, bottom_row=top + 4)
-        # print("New Rock")
-        # print_world(static_points, r)
-
-        falling = True
-        while falling:
-            wind_dir = winds.popleft()
-            winds.append(wind_dir)
-            new_r_position = r.blow(wind_dir)
-            # print(f"Wind: {wind_dir}")
-            out_of_bounds = any([part.x < LEFT_LIMIT or RIGHT_LIMIT < part.x for part in new_r_position])
-            if not out_of_bounds:
-                if not collision(new_r_position, static_points):
-                    r.parts = new_r_position
-
-            # print_world(static_points, r)
-
-            new_r_position = r.drop()
-            # print("Drop 1")
-            out_of_bounds = any([part.y < 0 for part in new_r_position])
-            if out_of_bounds or collision(new_r_position, static_points):
-                for point in r.parts:
-                    static_points.add(point)
-
-                falling = False
-            else:
-                r.parts = new_r_position
-
-            # print_world(static_points, r)
-
-        y_to_cmp = [top]
-        y_to_cmp.extend([part.y for part in r.parts])
-        top = max(y_to_cmp)
-        if i % 100000 == 0:
-            print(f"Shape {i} | Top: {top}")
-
-    return(top + 1)
+    return run(wind=raw_input.read_text(encoding="utf-8"), max_t=1000000000000)

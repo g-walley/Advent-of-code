@@ -33,5 +33,5 @@ class TestCase(AOCTest):
         """Test Created with answer to allow refactoring"""
         self.assertEqual(
             pt2(Path(self.in_path)),
-            0,
+            1507692307690,
         )
