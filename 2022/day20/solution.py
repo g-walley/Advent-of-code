@@ -8,12 +8,13 @@ def get_input(raw_input: Path, key) -> Deque:
     The index is used to help key the item incase there are repeats in the file."""
     return deque(
         [
-            (idx, int(num)*key)
+            (idx, int(num) * key)
             for idx, num in enumerate(
                 raw_input.read_text(encoding="utf-8").splitlines()
             )
         ]
     )
+
 
 def mix(d: Deque, ordering: List) -> Deque:
     """Execute mix algorithm.
@@ -27,6 +28,7 @@ def mix(d: Deque, ordering: List) -> Deque:
         d.appendleft((idx, num))
     return d
 
+
 def calc_out(d: Deque) -> int:
     # Remove all idxes from the queue, they are no longer necessary.
     d = deque([num for (_, num) in d])
@@ -39,6 +41,7 @@ def calc_out(d: Deque) -> int:
         out += d[0]
     return out
 
+
 def pt1(raw_input: Path):
     """part 1"""
     # Get input
@@ -47,6 +50,7 @@ def pt1(raw_input: Path):
     d = mix(d, list(d))
     # Calculate the output
     return calc_out(d)
+
 
 def pt2(raw_input):
     """part 2"""
