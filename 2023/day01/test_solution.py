@@ -16,12 +16,12 @@ class TestCase(AOCTest):
             142
         )
 
-    # def test_example_part_2(self):
-    #     """Input example data to part 2"""
-    #     self.assertEqual(
-    #         pt2(Path(self.ex)),
-    #         ,
-    #     )
+    def test_example_part_2(self):
+        """Input example data to part 2"""
+        self.assertEqual(
+            pt2(Path(self.ex)),
+            281,
+        )
 
     def test_input_part_1(self):
         """Test Created with answer to allow for refactoring."""
