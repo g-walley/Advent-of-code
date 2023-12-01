@@ -1,0 +1,12 @@
+test_example_part_1 (day01.test_solution.TestCase.test_example_part_1)
+Input example data to part 1 ... day01.test_solution.TestCase.test_example_part_1: 999.212us
+ok
+test_example_part_2 (day01.test_solution.TestCase.test_example_part_2)
+Input example data to part 2 ... <1us
+ok
+test_input_part_1 (day01.test_solution.TestCase.test_input_part_1)
+Test Created with answer to allow for refactoring. ... day01.test_solution.TestCase.test_input_part_1: 1.512ms
+ok
+test_input_part_2 (day01.test_solution.TestCase.test_input_part_2)
+Test Created with answer to allow refactoring ... day01.test_solution.TestCase.test_input_part_2: 4.005ms
+ok

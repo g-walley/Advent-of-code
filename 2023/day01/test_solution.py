@@ -31,9 +31,9 @@ class TestCase(AOCTest):
             54331,
         )
 
-    # def test_input_part_2(self):
-    #     """Test Created with answer to allow refactoring"""
-    #     self.assertEqual(
-    #         pt2(Path(self.in_path)),
-    #         2639,
-    #     )
+    def test_input_part_2(self):
+        """Test Created with answer to allow refactoring"""
+        self.assertEqual(
+            pt2(Path(self.in_path)),
+            54518,
+        )
