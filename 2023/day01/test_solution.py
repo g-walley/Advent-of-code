@@ -6,8 +6,8 @@ from day01.solution import pt1, pt2
 
 class TestCase(AOCTest):
     """Test case for Day 1"""
-    ex = "2023/day_01/example.txt"
-    in_path = "2023/day_01/input.txt"
+    ex = "2023/day01/example.txt"
+    in_path = "2023/day01/input.txt"
 
     def test_example_part_1(self):
         """Input example data to part 1"""
@@ -23,12 +23,12 @@ class TestCase(AOCTest):
     #         ,
     #     )
 
-    # def test_input_part_1(self):
-    #     """Test Created with answer to allow for refactoring."""
-    #     self.assertEqual(
-    #         pt1(Path(self.in_path)),
-    #         7811,
-    #     )
+    def test_input_part_1(self):
+        """Test Created with answer to allow for refactoring."""
+        self.assertEqual(
+            pt1(Path(self.in_path)),
+            54331,
+        )
 
     # def test_input_part_2(self):
     #     """Test Created with answer to allow refactoring"""
