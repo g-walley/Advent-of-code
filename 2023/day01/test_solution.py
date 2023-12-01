@@ -7,6 +7,7 @@ from day01.solution import pt1, pt2
 class TestCase(AOCTest):
     """Test case for Day 1"""
     ex = "2023/day01/example.txt"
+    ex_2 = "2023/day01/example_2.txt"
     in_path = "2023/day01/input.txt"
 
     def test_example_part_1(self):
@@ -19,7 +20,7 @@ class TestCase(AOCTest):
     def test_example_part_2(self):
         """Input example data to part 2"""
         self.assertEqual(
-            pt2(Path(self.ex)),
+            pt2(Path(self.ex_2)),
             281,
         )
 
