@@ -58,6 +58,10 @@ class Game:
     def max_green(self):
         return max(drawn.green for drawn in self.drawn)
 
+    @property
+    def power(self):
+        return self.max_blue * self.max_green * self.max_red
+
 def pt1(raw_input: Path) -> int:
     """part 1"""
     lines = raw_input.read_text().splitlines()
@@ -75,3 +79,6 @@ def pt1(raw_input: Path) -> int:
 
 def pt2(raw_input: Path):
     """part 2"""
+    lines = raw_input.read_text().splitlines()
+    games = [Game(line) for line in lines]
+    return sum(game.power for game in games)
