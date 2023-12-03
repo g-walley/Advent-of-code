@@ -1,6 +1,24 @@
+from __future__ import annotations
+from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 import re
-from string import digits
+from string import digits, punctuation
+from typing import Dict
+
+
+@dataclass(frozen=True)
+class Point2D:
+    x: int
+    y: int
+
+    def is_adjacent(self, other):
+        return (
+            ((self.x - 1) <= other.x)
+            and (other.x <= (self.x + 1))
+            and ((self.y - 1) <= other.y)
+            and (other.y <= (self.y + 1))
+        )
 
 
 def pt1(raw_input: Path):
@@ -33,3 +51,31 @@ def pt1(raw_input: Path):
 
 def pt2(raw_input: Path):
     """part 2"""
+    lines = raw_input.read_text().splitlines()
+    # First find location of the "*", and store as tuple pairs in a set
+    stars = {
+        Point2D(line_idx, match.span()[0])
+        for line_idx, line in enumerate(lines)
+        for match in re.finditer(r"\*", line)
+    }
+
+    # Find location of all numbers Map numbers as x, x+1, x+n == num
+    nums = {
+        Point2D(line_idx, i): int(match.group())
+        for line_idx, line in enumerate(lines)
+        for match in re.finditer(r"\d+", line)
+        for i in range(match.span()[0], match.span()[1])
+    }
+
+    # For each star, find numbers adjacent to it.
+    gears: Dict[Point2D, set[int]] = defaultdict(set)
+    for gear in stars:
+        for num_pos, num_value in nums.items():
+            if gear.is_adjacent(num_pos):
+                gears[gear].add(num_value)
+                if len(gears[gear]) >= 2:
+                    break
+
+    return sum(
+        list(nums)[0] * list(nums)[1] for nums in gears.values() if len(nums) == 2
+    )
