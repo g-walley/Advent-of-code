@@ -1,10 +1,11 @@
 from __future__ import annotations
-from collections import defaultdict
+from collections import defaultdict, deque
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 import re
 from string import digits, punctuation
-from typing import Dict
+from typing import Dict, Optional, Set
 
 
 @dataclass(frozen=True)
@@ -20,13 +21,83 @@ class Point2D:
             and (other.y <= (self.y + 1))
         )
 
+    @property
+    def adjacent(self):
+        return {
+            Point2D(self.x - 1, self.y - 1),
+            Point2D(self.x - 1, self.y),
+            Point2D(self.x - 1, self.y + 1),
+            Point2D(self.x + 1, self.y - 1),
+            Point2D(self.x + 1, self.y),
+            Point2D(self.x + 1, self.y + 1),
+            Point2D(self.x, self.y + 1),
+            Point2D(self.x, self.y - 1),
+        }
+
+    @property
+    def left(self):
+        return Point2D(self.x - 1, self.y)
+
+    @property
+    def right(self):
+        return Point2D(self.x + 1, self.y)
+
+@dataclass
+class Number:
+    raw: str
+    points: Set
+
+    @property
+    def value(self) -> int:
+        return int(self.raw)
+
+class Board:
+    all: dict[Point2D, str]
+    filt = digits
+    def __init__(self, rows: list[str], filt: Optional[str]):
+        if filt:
+            self.filt += filt
+        self.all = {
+            Point2D(x, y): char
+            for x, row in enumerate(rows)
+            for y, char in enumerate(row)
+            if char in self.filt
+        }
+
+    def numbers(self):
+        numbers = []
+        to_consider = deque(list(self.all.keys()))
+        previous = None
+        while to_consider:
+            c = to_consider.popleft()
+            if previous and c.left==:
+
+
+
+
+
+
+        return numbers
+
+
+
+
+class Pt1Board(Board):
+    def __init__(self, rows: list[str], filt=None):
+        super().__init__(rows=rows, filt=None)
+
+class Pt2Board(Board):
+    def __init__(self, rows: list[str], filt=None):
+        super().__init__(rows=rows, filt="*")
 
 def pt1(raw_input: Path):
     """part 1"""
     # Get length of lines:
     lines = raw_input.read_text().splitlines()
     shape = (len(lines[0]), len(lines))
+    board = Pt1Board(rows=lines)
 
+    numbers = board.numbers()
     total = 0
     for line_idx, line in enumerate(lines):
         matches = re.finditer(r"\d+", line)
@@ -52,6 +123,11 @@ def pt1(raw_input: Path):
 def pt2(raw_input: Path):
     """part 2"""
     lines = raw_input.read_text().splitlines()
+
+    for star in board.stars:
+        adj_numbers = {
+            point: board.relevant[point] for point in star.adjacent.intersection(board.numbers)
+        }
     # First find location of the "*", and store as tuple pairs in a set
     stars = {
         Point2D(line_idx, match.span()[0])
