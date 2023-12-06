@@ -14,17 +14,7 @@ class Mapping:
         else:
             return num
 
-
-def pt1(raw_input: Path):
-    """part 1"""
-    lines = raw_input.read_text().split("\n\n")
-
-    line_dict = {
-        line.split(":")[0].strip(): line.split(":")[1].strip().splitlines()
-        for line in lines
-    }
-    seeds = [int(num) for num in line_dict["seeds"][0].split()]
-
+def algo(line_dict, seeds):
     mapping_names = list(line_dict)
     mapping_names.remove("seeds")
 
@@ -51,8 +41,35 @@ def pt1(raw_input: Path):
             num = converted[0] if converted else num
         converted_nums.append(num)
 
-    return min(converted_nums)     
+    return min(converted_nums)    
+
+def pt1(raw_input: Path):
+    """part 1"""
+    lines = raw_input.read_text().split("\n\n")
+
+    line_dict = {
+        line.split(":")[0].strip(): line.split(":")[1].strip().splitlines()
+        for line in lines
+    }
+    seeds = [int(num) for num in line_dict["seeds"][0].split()]
+
+    return algo(line_dict, seeds)
 
 
 def pt2(raw_input: Path):
     """part 2"""
+    lines = raw_input.read_text().split("\n\n")
+
+    line_dict = {
+        line.split(":")[0].strip(): line.split(":")[1].strip().splitlines()
+        for line in lines
+    }
+    seeds = [int(num) for num in line_dict["seeds"][0].split()]
+    full_seeds = []
+    while seeds:
+        x = seeds.pop(0)
+        r = seeds.pop(0)
+        full_seeds.extend(range(x, x+r))
+
+    print(f"Number of Seeds: {len(full_seeds)}")
+    return algo(line_dict, full_seeds)
