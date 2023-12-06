@@ -1,13 +1,19 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Tuple
-from networkx import DiGraph
+
 
 @dataclass
 class Mapping:
     src: int
     dst: int
     rng: int
+
+    def convert(self, num: int) -> int:
+        if ((self.src <= num) and (num < self.src + self.rng)):
+            return self.dst + (num - self.src) 
+        else:
+            return num
+
 
 def pt1(raw_input: Path):
     """part 1"""
@@ -17,28 +23,35 @@ def pt1(raw_input: Path):
         line.split(":")[0].strip(): line.split(":")[1].strip().splitlines()
         for line in lines
     }
-    schematic = DiGraph(multigraph=False)
     seeds = [int(num) for num in line_dict["seeds"][0].split()]
 
-    mappings = list(line_dict)
-    mappings.remove("seeds")
+    mapping_names = list(line_dict)
+    mapping_names.remove("seeds")
 
-    for key in set(mappings):
-        parent, child = tuple(key.strip(" map").split("-to-"))
-
-        # if parent not in schematic.nodes():
-        #     schematic.add_node(parent)
-        # if child not in schematic.nodes():
-        #     schematic.add_node(child)
-        mappings = []
+    mappings: list[list[Mapping]] = []
+    
+    
+    for key in mapping_names:
+        set_of_mappings = []
         for number_range in line_dict[key]:
             to_min, from_min, span = tuple(map(int, number_range.split()))
-            schematic.add_edge(parent, child, rule=Mapping(from_min, to_min, span))
+            set_of_mappings.append(Mapping(from_min, to_min, span))
+        
+        mappings.append(set_of_mappings)
 
-    locations = []
-    adjacency = schematic.adjacency()
-    node_name = "seed"
+    converted_nums = []
+    for seed in seeds:
+        num = seed
+        for set_of_mappings in mappings:
+            converted = [ 
+                conv 
+                for mapping in set_of_mappings 
+                if (conv := mapping.convert(num)) != num
+            ]
+            num = converted[0] if converted else num
+        converted_nums.append(num)
 
+    return min(converted_nums)     
 
 
 def pt2(raw_input: Path):
